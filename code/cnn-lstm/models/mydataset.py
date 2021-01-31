@@ -38,19 +38,19 @@ class CnnLstmDataset(Dataset):
         self.txt_path = txt_path
         self.transform = transform
         self.image_list = []
-        with open(self.txt_path, 'r') as f:
+        with open(self.txt_path, 'r', encoding='utf-8') as f:
             for line in f:
                 images = [img_path for img_path in line.split(',')]
                 self.image_list.append((images[:-1], images[-1]))
 
     def __getitem__(self, index):
-        print(self.image_list[index])
+        # print(self.image_list[index])
         X, labels = self._concat_images(self.image_list[index])
         # print('debug', X.shape, labels)
-        print('debug11 labels,int(labels)', labels, int(labels))
+        # print('debug11 labels,int(labels)', labels, int(labels))
         # labels = torch.LongTensor(int(labels))
         labels = torch.tensor(int(labels), dtype=torch.float32)
-        print('debug11 labels',labels)
+        # print('debug11 labels',labels)
         return X, labels
 
     def __len__(self):
@@ -73,6 +73,6 @@ class CnnLstmDataset(Dataset):
             X.append(image)
         # print('debug4:', X)
         X = torch.stack(X, dim=0)
-        print(f'X shape:{X.size()}')
+        # print(f'X shape:{X.size()}')
         return X, frames[1]
 

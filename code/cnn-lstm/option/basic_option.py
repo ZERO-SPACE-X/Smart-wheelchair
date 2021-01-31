@@ -17,7 +17,7 @@ class BasciOption():
 
     def initialize(self,is_train):
         # self.parser.add_argument('--batch_size', type=int, default=16)
-        self.parser.add_argument('--batch_size', type=int, default=2)
+        self.parser.add_argument('--batch_size', type=int, default=4)
         self.parser.add_argument('--lr', type=int, default=0.01)
         # self.parser.add_argument('--model', type=str, default='basic')
         self.parser.add_argument('--model', type=str, default='plus')
@@ -30,8 +30,9 @@ class BasciOption():
         self.parser.add_argument('--transform', type=bool, default=True)
 
         # self.parser.add_argument('--train_path', type=str, default=r'D:\研究生期间项目资料\Gaze-Estimation\code\modify_module\dataset\train\labels.txt')
-        self.parser.add_argument('--train_path', type=str, default=r'D:\研究生期间项目资料\Smart-wheelchair\code\cnn-lstm\labels.txt')
-        self.parser.add_argument('--val_path', type=str, default=r'D:\研究生期间项目资料\Gaze-Estimation\code\modify_module\dataset\val\labels.txt')
+        # self.parser.add_argument('--val_path', type=str, default=r'D:\研究生期间项目资料\Gaze-Estimation\code\modify_module\dataset\val\labels.txt')
+        self.parser.add_argument('--train_path', type=str, default=r'D:\研究生期间项目资料\Smart-wheelchair\code\cnn-lstm\labels\train\labels.txt')
+        self.parser.add_argument('--val_path', type=str, default=r'D:\研究生期间项目资料\Smart-wheelchair\code\cnn-lstm\labels\val\labels.txt')
 
         if is_train == True:
             file_name = os.listdir('./')
