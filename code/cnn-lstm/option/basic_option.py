@@ -30,7 +30,7 @@ class BasciOption():
         self.parser.add_argument('--transform', type=bool, default=True)
 
         # self.parser.add_argument('--train_path', type=str, default=r'D:\研究生期间项目资料\Gaze-Estimation\code\modify_module\dataset\train\labels.txt')
-        self.parser.add_argument('--train_path', type=str, default=r'D:\研究生期间项目资料\Gaze-Estimation\code\modify_module\labels.txt')
+        self.parser.add_argument('--train_path', type=str, default=r'D:\研究生期间项目资料\Smart-wheelchair\code\cnn-lstm\labels.txt')
         self.parser.add_argument('--val_path', type=str, default=r'D:\研究生期间项目资料\Gaze-Estimation\code\modify_module\dataset\val\labels.txt')
 
         if is_train == True:

@@ -47,9 +47,9 @@ class CnnLstmDataset(Dataset):
         print(self.image_list[index])
         X, labels = self._concat_images(self.image_list[index])
         # print('debug', X.shape, labels)
-        print('debug11 labels', labels)
+        print('debug11 labels,int(labels)', labels, int(labels))
         # labels = torch.LongTensor(int(labels))
-        labels = torch.Tensor(int(labels))
+        labels = torch.tensor(int(labels), dtype=torch.float32)
         print('debug11 labels',labels)
         return X, labels
 
