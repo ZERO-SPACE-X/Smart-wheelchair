@@ -32,6 +32,7 @@ class CnnLstm(torch.nn.Module):
 
     def __init__(self):
         super(CnnLstm, self).__init__()
+        self.seq = 6
         self.conv1 = nn.Conv2d(3, 20, kernel_size=3, padding=0)
         # 将变量展开成一维，或者用一个fc层
         self.fc1 = nn.Linear(47520, 512)
@@ -40,39 +41,82 @@ class CnnLstm(torch.nn.Module):
 
         # self.fc2 = nn.Linear(256, 2)  #[N,hidden,classes]
         # self.fc2 = nn.Linear(2560, 2)  #[N,hidden,classes]
-        self.fc2 = nn.Linear(2560, 1)  #[N,hidden,classes]
+        self.fc2 = nn.Linear(self.seq*256, 1)  #[N,hidden,classes]
 
     def forward(self, x_frame_concat):
         cnn_embed_seq = []
-        print('debug input size :', x_frame_concat.size())  #[2, 10, 3, 50, 200] 当label.txt中只有一行的时候输出为 [10, 3, 50, 200]，后续就不太对
-        assert x_frame_concat.size(1) == 10, 'frame is not expect'
+        # print('debug input size :', x_frame_concat.size())  #[2, 10, 3, 50, 200] 当label.txt中只有一行的时候输出为 [10, 3, 50, 200]，后续就不太对
+        assert x_frame_concat.size(1) == self.seq, 'frame is not expect'
         for seq in range(x_frame_concat.size(1)):
-            print(f'seq:{seq}')
-            print(x_frame_concat[:,seq, :, :, :],x_frame_concat.size())
+            # print(f'seq:{seq}')
+            # print(x_frame_concat[:,seq, :, :, :],x_frame_concat.size())
             # x = F.relu(F.max_pool2d(self.conv1(x[seq, :, :, :]), (2, 2)))  # [N, 20, 24, 99]  N*C*H*W
             x = F.relu(F.max_pool2d(self.conv1(x_frame_concat[:,seq, :, :, :]), (2, 2)))  # [N, 20, 24, 99]  N*C*H*W
-            print(f'conv1.shape: {x.shape}')
+            # print(f'conv1.shape: {x.shape}')
             x = x.view(x.size(0), -1)   # [N, 20*24*99= 47520]
-            print(f'x.view.shape: {x.shape}')
+            # print(f'x.view.shape: {x.shape}')
             x = F.relu(self.fc1(x))     # [N, 512]
-            print(f'fc1(x).shape: {x.shape}')
+            # print(f'fc1(x).shape: {x.shape}')
             cnn_embed_seq.append(x)
-        print(f'cnn_embed_seq.shape: {len(cnn_embed_seq)}')
+        # print(f'cnn_embed_seq.shape: {len(cnn_embed_seq)}')
         # cnn_embed_seq = torch.stack(cnn_embed_seq, dim=0)
-        # print()
         cnn_embed_seq = torch.stack(cnn_embed_seq, dim=0).permute(1, 0, 2)  # [N ,time_seq, 512]  [2,512,10]
         # cnn_embed_seq = torch.stack(cnn_embed_seq, dim=0)  # [N ,time_seq, 512]
-        print(f'cnn_embed_seq_T.shape: {cnn_embed_seq.size()}')
+        # print(f'cnn_embed_seq_T.shape: {cnn_embed_seq.size()}')
         x, (h_n,c_n) = self.lstm(cnn_embed_seq)
-        print(f'lstm.shape: {len(x)}')
-        print(f'lstm.shape: {x.size()}')
+        # print(f'lstm.shape: {len(x)}')
+        # print(f'lstm.shape: {x.size()}')
         # x = F.relu(self.fc2(x))
-
+        print(f'x size:{x.size()}')
         # x = self.fc2(x.reshape([2, 2560]))
-        x = F.sigmoid(self.fc2(x.reshape([-1, 2560])))
-        print(f'fc2(x).shape: {x.size()}')
+        x = F.sigmoid(self.fc2(x.reshape(-1, self.seq*256)))
+        # print(f'fc2(x).shape: {x.size()}')
         return x
 
 
 
+class CnnLstmPlus(torch.nn.Module):
 
+    def __init__(self):
+        super(CnnLstmPlus, self).__init__()
+        self.seq = 6
+        self.conv1 = nn.Conv2d(3, 20, kernel_size=3, padding=0)
+        # 将变量展开成一维，或者用一个fc层
+        self.fc1 = nn.Linear(47520, 1024)
+        # lstm
+        # self.lstm = nn.LSTM(input_size=47520, hidden_size=256, num_layers=1, batch_first=True)
+        self.lstm = nn.LSTM(input_size=1024, hidden_size=512, num_layers=1, batch_first=True)
+
+        # self.fc2 = nn.Linear(256, 2)  #[N,hidden,classes]
+        # self.fc2 = nn.Linear(2560, 2)  #[N,hidden,classes]
+        self.fc2 = nn.Linear(self.seq*512, 1)  #[N,hidden,classes]
+
+    def forward(self, x_frame_concat):
+        cnn_embed_seq = []
+        # print('debug input size :', x_frame_concat.size())  #[2, 10, 3, 50, 200] 当label.txt中只有一行的时候输出为 [10, 3, 50, 200]，后续就不太对
+        assert x_frame_concat.size(1) == self.seq, 'frame is not expect'
+        for seq in range(x_frame_concat.size(1)):
+            # print(f'seq:{seq}')
+            # print(x_frame_concat[:,seq, :, :, :],x_frame_concat.size())
+            # x = F.relu(F.max_pool2d(self.conv1(x[seq, :, :, :]), (2, 2)))  # [N, 20, 24, 99]  N*C*H*W
+            x = F.relu(F.max_pool2d(self.conv1(x_frame_concat[:,seq, :, :, :]), (2, 2)))  # [N, 20, 24, 99]  N*C*H*W
+            # print(f'conv1.shape: {x.shape}')
+            x = x.view(x.size(0), -1)   # [N, 20*24*99= 47520]
+            # print(f'x.view.shape: {x.shape}')
+            x = F.relu(self.fc1(x))     # [N, 4096]
+            # print(f'fc1(x).shape: {x.shape}')
+            cnn_embed_seq.append(x)
+        # print(f'cnn_embed_seq.shape: {len(cnn_embed_seq)}')
+        # cnn_embed_seq = torch.stack(cnn_embed_seq, dim=0)
+        cnn_embed_seq = torch.stack(cnn_embed_seq, dim=0).permute(1, 0, 2)  # [N ,time_seq, 512]  [2,512,10]
+        # cnn_embed_seq = torch.stack(cnn_embed_seq, dim=0)  # [N ,time_seq, 512]
+        # print(f'cnn_embed_seq_T.shape: {cnn_embed_seq.size()}')
+        x, (h_n,c_n) = self.lstm(cnn_embed_seq)
+        # print(f'lstm.shape: {len(x)}')
+        # print(f'lstm.shape: {x.size()}')
+        # x = F.relu(self.fc2(x))
+        print(f'x size:{x.size()}')
+        # x = self.fc2(x.reshape([2, 2560]))
+        x = F.sigmoid(self.fc2(x.reshape(-1, self.seq*512)))
+        # print(f'fc2(x).shape: {x.size()}')
+        return x
